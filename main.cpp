@@ -1,10 +1,13 @@
-#include <iostream>
+﻿#include <iostream>
+#include <fstream>
 #define MAX_ARRAY_LENGTH 100
 #define MAX_ARRAY_LENGTH_LONG 10000
 #include "t1.h"
 #include <math.h>
 
 using namespace std;
+
+ifstream fin ("txt.in");
 
 /*
 1.(0.4p)  Scrieți o funcție care verifică dacă un număr este palindrom. Un număr
@@ -38,7 +41,7 @@ cifrelor reprezentării lui binare.
 */
 unsigned char sumBinaryFigure(unsigned long long number)
 {
-    unsigned int sum=0;
+    unsigned char sum=0;
 
     while (number)
     {
@@ -47,8 +50,10 @@ unsigned char sumBinaryFigure(unsigned long long number)
     }
 
     int x=48;
-    if (x<=9)
+    if (sum<=9)
         return sum+x;
+
+    return sum+x;
 }
 
 /*
@@ -74,6 +79,7 @@ unsigned char dayOfTheWeek(unsigned short year, unsigned char month, unsigned ch
 
     if (month>12) return 0+48;
     if (day>31)   return 0+48;
+    if (month==2 && day>29)   return 0+48;
     if ( !isLeapYear(year) && month==2 && day==29) return 0+48;
 
     if (month==1) { month=13; year--; }
@@ -169,14 +175,23 @@ bool isPrime(unsigned int number)
 unsigned short primeDivisors(unsigned int left, unsigned int right)
 {
     int d, nrdiv, k=0, maxn=0, nrmax=0, i, j;
-    int v[100000];
+    int v[1001];
     int lgv=right-left+1;
+    bool ciur[right+1];
+    for (i=left; i<=right;i++)  ciur[i]=true;
+
+    for (i=left; i*i<=right;i++)
+        if (ciur[i])
+            for (j=i; j*i<=right;j++)
+                ciur[i*j]=false;
+
+
     for (i=left; i<=right; i++)
     {
         d=2; nrdiv=0;
         while(d<=i/2)
         {
-            if (isPrime(d) && i%d==0)
+            if (!ciur[d] && i%d==0)
                 nrdiv++;
             d++;
         }
@@ -212,7 +227,10 @@ matrix primeTwins(unsigned int count, unsigned int lowerBound)
         j=i+2;
     }
     else
+    {
+        i=i+2;
         j=i+2;
+    }
 
     M.lines=0; M.columns=2;
     while (count)
@@ -260,7 +278,36 @@ bool areOrderedFibonnaci(vector vec)
         Pentru [1,2,3] si [3,2] funcția returnează 2;
         Pentru [1,2,3] si [3,2,4] funcția returnează 3.
 */
-unsigned char checkVectorInclude(vector vecOne, vector vecTwo);
+unsigned char checkVectorInclude(vector vecOne, vector vecTwo)
+{
+    int i, j, maxlg;
+    vector frecvOne, frecvTwo, vecRes;
+
+    frecvOne.length=frecvTwo.length=vecRes.length=100;
+
+    for (i=0; i<frecvOne.length; i++)
+        frecvOne.values[i]=frecvTwo.values[i]=0;
+
+    for (i=0; i<vecOne.length; i++)
+        frecvOne.values[vecOne.values[i]]++;
+
+    for (i=0; i<vecTwo.length; i++)
+        frecvTwo.values[vecTwo.values[i]]++;
+
+
+    for (i=0; i<vecRes.length; i++)
+        vecRes.values[i]=frecvOne.values[i]-frecvTwo.values[i];
+
+    for (i=0; i<vecRes.length; i++)
+        if (vecRes.values[i]==1 || vecRes.values[i]==-1)
+        {
+            if (vecOne.length==vecTwo.length) return 3+48;
+            if (frecvTwo.values[i]==1) return 1+48;
+            if (frecvOne.values[i]==1) return 2+48;
+        }
+
+        return 0+48;
+}
 
 /*
 11.(0.4p) Scrieți o funcție care pentru un vector și o matrice primite ca
@@ -274,7 +321,28 @@ funcția returnează true;
 [2,1]
 [3,4] funcția returnează false.
 */
-bool checkIsIn(vector vec, matrix mat);
+bool checkIsIn(vector vec, matrix mat)
+{
+    int i, j, ok;
+    for (i=0; i<mat.lines; i++) //cautam pe linii
+    {
+        ok=1;
+        for (j=0; j<mat.columns && ok; j++)
+            if (mat.values[i][j]!=vec.values[j])
+                ok=0;
+        if (ok) return true;
+    }
+
+    for (j=0; j<mat.columns; j++) //cautam pe coloane
+    {
+        ok=1;
+        for (i=0; i<mat.lines && ok; i++)
+            if (mat.values[i][j]!=vec.values[i])
+                ok=0;
+        if (ok) return true;
+    }
+    return false;
+}
 
 /*
 12.(0.4p) Scrieți o funcție care primește ca parametri o matrice patratică nxn,
@@ -287,11 +355,60 @@ cu rotații stânga, respectiv dreapta în funcție de numerele primite ca param
 [2,4]
 [1,3].
         Pentru [1,2][3,4], rotLeft = 0, rotRight = 1 funcția returnează
-[3,2]
+[3,1]
 [4,2]
 */
-matrix rotate(matrix mat, unsigned int rotLeft, unsigned int rotRight);
+matrix rotate(matrix mat, unsigned int rotLeft, unsigned int rotRight)
+{
+    int i, j;
+    matrix matAux;
+    matAux.lines=mat.lines;
+    matAux.columns=mat.lines;
 
+    if (rotLeft==rotRight) return mat;
+    if (rotLeft>rotRight)
+    {
+        rotLeft-=rotRight;
+        rotLeft%=4;
+        rotRight=0;
+    }
+    else
+    {
+        rotRight-=rotLeft;
+        rotRight%=4;
+        rotLeft=0;
+    }
+
+    if (rotLeft==0)
+    {
+        while (rotRight)
+        {
+            for (j=0; j<mat.columns; j++)
+                for (i=mat.lines-1; i>=0; i--)
+                    matAux.values[j][mat.lines-1-i]=mat.values[i][j];
+
+            for (i=0; i<mat.lines; i++)
+                for (j=0; j<mat.columns; j++)
+                    mat.values[i][j]=matAux.values[i][j];
+            rotRight--;
+        }
+    }
+    else //rotRight=0;
+    {
+        while (rotLeft)
+        {
+            for (i=0; i<mat.lines; i++)
+                for (j=0; j<mat.columns; j++)
+                    matAux.values[i][j]=mat.values[j][i];
+
+            for (j=0; j<mat.columns; j++)
+                for (i=0; i<mat.lines; i++)
+                    mat.values[mat.lines-1-i][j]=matAux.values[i][j];
+            rotLeft--;
+        }
+    }
+    return mat;
+}
 
 /*
 13.(0.6p)  Scrieți o funcție care pentru un vector de  lungime x și un număr y
@@ -300,7 +417,47 @@ verifică dacă elementele din vector sunt primele x numere din sirul lui Fibonn
      Ex: Pentru [3,5,2] și 2 functia va returna true;
         Pentru [3,4,2] si 2 functia va returna false.
 */
-bool isPartOfFibonnaci(vector vec, unsigned int startingNumber);
+bool isPartOfFibonnaci(vector vec, unsigned int startingNumber)
+{
+    long long int i, j, mini, pmin;
+
+    //Select Sort
+    for (i=0; i<vec.length-1; i++)
+    {//determinam min de la 1 la i
+        mini=vec.values[i]; pmin=i;
+        for (j=i+1; j<vec.length; j++)
+            if (vec.values[j]<mini)
+            {
+                mini=vec.values[j];
+                pmin=j;
+            }
+         //interschimbam min cu elementul de pe pozitia i
+
+         vec.values[pmin]=vec.values[i];
+         vec.values[i]=mini;
+    }
+
+    if (vec.values[0]!=startingNumber) return false;
+    long long int a=0, b=1, c;
+    while(c!=startingNumber)
+    {
+        c=a+b;
+        a=b;
+        b=c;
+    }
+
+    if (a+startingNumber != vec.values[1]) return false;
+
+    bool ok=true;
+    for (i=0; i<vec.length-2 && ok; i++)
+    {
+        if (vec.values[i]+vec.values[i+1]!=vec.values[i+2])
+            ok=false;
+    }
+
+    if (ok) return 0;
+    return 0;
+}
 
 /*14.(0.6p) Scrieți o funcție care primește
  - un vector de x numere a căror reprezentare binară reprezintă mulțimi de
@@ -317,7 +474,48 @@ Ex: Pentru sets=[1,2,3] și operations=[’U’,’\’] funcția va calcula 001
 cu 010(2) și va avea rezultatul 011 iar 011 minus 011(3) va avea rezultatul 000(0)
 si funcția va returna 0.
 */
-unsigned long setOperations(long sets[], char operations[], unsigned int x);
+unsigned long setOperations(long long sets[], char operations[], unsigned int x)
+{
+    int i, j, k, v[6], first_b2[6], second_b2[6];
+    for (i=0; i<6; i++) v[i]=first_b2[i]=second_b2[i]=0;
+
+    k=0;
+    for (i=0; i<x; i+=2)
+    {
+        for (j=0; sets[i]>0; j++)
+        {
+            first_b2[j]=sets[i]%2;
+            sets[i]/=2;
+        }
+
+        for (j=0; sets[i+1]>0; j++)
+        {
+            second_b2[j]=sets[i+1]%2;
+            sets[i+1]/=2;
+        }
+
+        if (operations[k++]=='U')
+        {
+            for (i=0; i<6; i++)
+            {
+                v[i]=(first_b2[i] || second_b2[i]);
+            }
+        }
+
+        if (operations[k++]=='A')
+        {
+            for (i=0; i<6; i++)
+            {
+                v[i]=(first_b2[i] && second_b2[i]);
+            }
+        }
+
+        //if (operations[k++]==)
+
+
+        //if (operations[k++]=='/')
+    }
+}
 
 /*
 15.(0.6p) Scrieți o funcție care primește ca parametri un vector de x numere  și
@@ -329,7 +527,28 @@ operației a doua și al patrulea număr ș.a.m.d.
 	Operații: < (<<), > (>>), ^, |, &
 	Ex: Pentru numbers=[1,2,3] și operations=[>,&] funcția va returna (1>>2)&3 = 0
 */
-unsigned long bitOperations(long numbers[], char operations[], unsigned int x);
+unsigned long bitOperations(long numbers[], char operations[], unsigned int x)
+{
+    unsigned long i, j, k=0, result;
+
+    for (i=0; i<x; i++)
+    {
+        if (operations[k]=='<')
+            result=numbers[i] << numbers[i+1];
+        if (operations[k]=='>')
+            result=numbers[i] >> numbers[i+1];
+        if (operations[k]=='^')
+            result=numbers[i] ^ numbers[i+1];
+        if (operations[k]=='|')
+            result=numbers[i] | numbers[i+1];
+        if (operations[k]=='&')
+            result=numbers[i] & numbers[i+1];
+
+        k++; numbers[i+1]=result;
+    }
+
+    return result;
+}
 
 /*
 16.(0.85p) Scrieți o funcție care verifică dacă reprezentarea binară a unui
@@ -398,15 +617,17 @@ int main()
 {
     int i, j;
 
-    cout<<"1: "<<isPalindrom(0)<<'\n';
-    cout<<"2: "<<sumBinaryFigure(16364)<<'\n';///2 XXXXXXXXXXXXXXXXXX!!!!
-    cout<<"3: "<<isLeapYear(2000)<<'\n';
-    cout<<"4: "<<dayOfTheWeek(2015, 2, 29)<<'\n';
-    cout<<"5: "<<fibonnaci(29)<<'\n';
-    cout<<"6: "<<perfectNumbers(30)<<'\n';
-    cout<<"7: "<<primeDivisors(0, 5000)<<'\n'; ///xxxxxxxxxx vector de 100 dim
-    matrix M=primeTwins(10, 20000);
-    cout<<"8: "<<'\n';
+    ///0+48 ???
+    cout<<"1: "<<isPalindrom(13)<<'\n';///OK
+    cout<<"2: "<<sumBinaryFigure(8023)<<'\n';// nu merge pe numere mari
+    cout<<"3: "<<isLeapYear(2004)<<'\n'; /// OK
+    cout<<"4: "<<dayOfTheWeek(2012, 2, 30)<<'\n';///OK
+    cout<<"5: "<<fibonnaci(49)<<'\n';///OK
+    cout<<"6: "<<perfectNumbers(100000)<<'\n'; /// OK nr mari->nu
+    //cout<<"7: "<<primeDivisors(0, 10)<<'\n'; /// de testat pe numere mari 0, 4miliarde, 1 element?
+    //de refacut 7
+    matrix M=primeTwins(100, 200020);
+    cout<<"8: "<<'\n'; /// OK;
     for (i=0; i<M.lines; i++)
     {
         for (j=0; j<M.columns; j++)
@@ -414,7 +635,47 @@ int main()
         cout<<'\n';
     }
     vector fib;
-    cout<<"9: "<<areOrderedFibonnaci(fib)<<'\n';
+    cout<<"9: "<<areOrderedFibonnaci(fib)<<'\n';///OK
+
+    /*vector v1, v2;
+    cin>>v1.length>>v2.length;
+    for (i=0; i<v1.length; i++) cin>>v1.values[i];
+    for (i=0; i<v2.length; i++) cin>>v2.values[i];
+
+    cout<<"10: "<<checkVectorInclude(v1, v2); //de refacut, not working*/
+
+    //matrix M;
+    fin>>M.lines>>M.columns;
+    for (i=0; i<M.lines; i++)
+        for (j=0; j<M.columns; j++)
+            fin>>M.values[i][j];
+    vector v;
+    fin>>v.length;
+    for (i=0; i<v.length; i++)
+        fin>>v.values[i];
+    cout<<"11: "<<checkIsIn(v, M)<<'\n';///OK
+
+    M=rotate(M, 3, 1);
+    cout<<"12: "<<'\n'; ///OK
+    for (i=0; i<M.lines; i++)
+    {
+        for (j=0; j<M.columns; j++)
+            cout<<M.values[i][j]<<" ";
+        cout<<'\n';
+    }
+    cout<<"13: "<<isPartOfFibonnaci(v, 5)<<'/n';///!OK
+    //cout<<"14: "//neterminata
+
+    long  v1[100], x;
+    char c[100];
+
+    fin>>x;
+    for (i=0; i<x; i++)
+        fin>>v1[i];
+
+    for (i=0; i<x-1; i++)
+        fin>>c[i];
+    //cout<<"15: "<<bitOperations(v1, c, x)<<'\n'; ///OK;
 
     //cout<<"16: "<<palindrom(128)<<'\n';
 
