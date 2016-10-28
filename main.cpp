@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <fstream>
 #define MAX_ARRAY_LENGTH 100
 #define MAX_ARRAY_LENGTH_LONG 10000
@@ -17,7 +17,7 @@ la stânga la dreapta.
 */
 bool isPalindrom(unsigned long long number)
 {
-    int copie_number=number, new_number=0;
+    unsigned long long copie_number=number, new_number=0;
 
     if (number<=9) return true;
 
@@ -49,12 +49,9 @@ unsigned char sumBinaryFigure(unsigned long long number)
         number/=2;
     }
 
-    int x=48;
-    if (sum<=9)
-        return sum+x;
-
-    return sum+x;
+    return sum;
 }
+
 
 /*
 3.(0.4p) Scrieti o funcție care calculează dacă un an este bisect.
@@ -77,10 +74,10 @@ unsigned char dayOfTheWeek(unsigned short year, unsigned char month, unsigned ch
 {
     int h, q, m, k, j;
 
-    if (month>12) return 0+48;
-    if (day>31)   return 0+48;
-    if (month==2 && day>29)   return 0+48;
-    if ( !isLeapYear(year) && month==2 && day==29) return 0+48;
+    if (month>12) return 0;
+    if (day>31)   return 0;
+    if (month==2 && day>29)   return 0;
+    if (!isLeapYear(year) && month==2 && day==29) return 0;
 
     if (month==1) { month=13; year--; }
     if (month==2) { month=14; year--; }
@@ -91,9 +88,9 @@ unsigned char dayOfTheWeek(unsigned short year, unsigned char month, unsigned ch
     h=h%7;
 
     int x=h+6;
-    if (x<8) return x+48;
+    if (x<8) return x;
 
-    return x%7 + 48;
+    return x%7;
 }
 
 /*
@@ -107,7 +104,7 @@ unsigned char dayOfTheWeek(unsigned short year, unsigned char month, unsigned ch
 */
 unsigned int fibonnaci(int index)
 {
-    int f1=0, f2=1, f3;
+    int f1=1, f2=1, f3;
 
     if (index <=0 ) return 0;
     if (index==1) return 0;
@@ -132,18 +129,19 @@ celor mai mari două numere perfecte mai mici decat un număr (number >= 30) dat
 */
 unsigned long perfectNumbers(unsigned int number)
 {
-    unsigned long long int d, perfect1=6, perfect2=28, i=30, s;
+    unsigned long int d, perfect1=6, perfect2=28, i=30, sum;
 
     while (i<number)
     {
-        d=2; s=1;
-        while (d*d<=i)
+        d=2; sum=1;
+        while (d*d<i)
         {
             if (i%d==0)
-                s=s+d+i/d;
+                sum=sum+d+i/d;
             d++;
         }
-        if (s==i)
+        if (d*d==i) sum+=d;
+        if (sum==i)
         {
             perfect1=perfect2;
             perfect2=i;
@@ -281,11 +279,12 @@ bool areOrderedFibonnaci(vector vec)
 unsigned char checkVectorInclude(vector vecOne, vector vecTwo)
 {
     int i, j, maxlg;
-    vector frecvOne, frecvTwo, vecRes;
+    vector frecvOne, frecvTwo;
 
-    frecvOne.length=frecvTwo.length=vecRes.length=100;
+    frecvOne.length=vecOne.length;
+    frecvTwo.length=vecTwo.length;
 
-    for (i=0; i<frecvOne.length; i++)
+    for (i=0; i<100; i++)
         frecvOne.values[i]=frecvTwo.values[i]=0;
 
     for (i=0; i<vecOne.length; i++)
@@ -294,19 +293,36 @@ unsigned char checkVectorInclude(vector vecOne, vector vecTwo)
     for (i=0; i<vecTwo.length; i++)
         frecvTwo.values[vecTwo.values[i]]++;
 
-
-    for (i=0; i<vecRes.length; i++)
-        vecRes.values[i]=frecvOne.values[i]-frecvTwo.values[i];
-
-    for (i=0; i<vecRes.length; i++)
-        if (vecRes.values[i]==1 || vecRes.values[i]==-1)
+    //Caz vecOne==vecTwo
+    if (frecvOne.length==frecvTwo.length)
+    {
+        for (i=0; i<frecvOne.length; i++)
         {
-            if (vecOne.length==vecTwo.length) return 3+48;
-            if (frecvTwo.values[i]==1) return 1+48;
-            if (frecvOne.values[i]==1) return 2+48;
+            if (frecvOne.values[i]!=frecvTwo.values[i])
+                return 3+'0';
         }
+        return 0+'0';
+    }
 
-        return 0+48;
+    //Caz vecTwo inclus in vecOne
+    if (frecvOne.length>frecvTwo.length)
+    {
+        for (i=0; i<frecvOne.length; i++)
+        {
+            if ( (frecvOne.values[i]-frecvTwo.values[i])<=-1)
+                return 3+'0';
+        }
+        return 2+'0';
+    }
+    else //Caz vecOne inclus in vecTwo
+    {
+        for (i=0; i<frecvTwo.length; i++)
+        {
+            if ( (frecvTwo.values[i]-frecvOne.values[i])<=-1)
+                return 3+'0';
+        }
+        return 1+'0';
+    }
 }
 
 /*
@@ -438,6 +454,7 @@ bool isPartOfFibonnaci(vector vec, unsigned int startingNumber)
     }
 
     if (vec.values[0]!=startingNumber) return false;
+
     long long int a=0, b=1, c;
     while(c!=startingNumber)
     {
@@ -455,8 +472,7 @@ bool isPartOfFibonnaci(vector vec, unsigned int startingNumber)
             ok=false;
     }
 
-    if (ok) return 0;
-    return 0;
+    return ok;
 }
 
 /*14.(0.6p) Scrieți o funcție care primește
@@ -556,16 +572,39 @@ număr dat ca parametru este palindrom.
 */
 bool palindrom(long number)
 {
-    int i=0, v[MAX_ARRAY_LENGTH];
+    int i=0, b[MAX_ARRAY_LENGTH], negativ=0;
 
-    while (number)
+    if (number<0)
     {
-        v[i++]=number%2;
+        number*=-1;
+        negativ=1;
+    }
+
+    for (i=0; i<32 || number; i++)
+    {
+        b[i]=number%2;
         number/=2;
     }
+
     int length=i;
+    if (negativ)
+    {
+        for (i=0; i<32; i++)
+            b[i]=1-b[i];
+        i=0;
+        //adun 1 la number
+        if (b[i]==0)
+            b[i++]=1;
+        else
+        {
+            while (b[i]) b[i++]=0;
+            b[i]=1;
+        }
+    }
+
+
     for (i=0; i<length/2; i++)
-        if (v[i]!=v[length-1-i])
+        if (b[i]!=b[length-1-i])
             return false;
 
     return true;
@@ -588,7 +627,36 @@ returnează true;
 [1,2]
 returnează false.
 */
-bool fibonnaciSpirale(matrix);
+bool fibonnaciSpirale(matrix mat)
+{
+    int k, i, j, l=0, nr=0;
+    int v[100001];
+
+    for (k=0; k<(mat.lines+1)/2 && nr<=mat.lines*mat.columns; k++)
+    {
+        for (j=k; j<=mat.columns-k-1; j++)
+        {   v[l++]=mat.values[k][j]; nr++;}
+
+        for (i=k+1; i<=mat.lines-k-1; i++)
+        {   v[l++]=mat.values[i][mat.columns-k-1]; nr++;}
+
+        if (nr>=mat.columns*mat.lines) break;
+        for (j=mat.columns-k-2; j>=k; j--)
+        {   v[l++]=mat.values[mat.lines-k-1][j]; nr++;}
+
+        for (i=mat.lines-k-2; i>k; i--)
+        {   v[l++]=mat.values[i][k]; nr++;}
+    }
+
+    int f1=0, f2=1;
+    if (v[0]==0 && v[1]==1)
+    {
+        for (i=2; i<l; i++)
+            if (v[i]!=(v[i-1]+v[i-2]))
+                return false;
+    }
+    return true;
+}
 
 /*
 18.(0.85p) Scrieți o funcție care primește un labirint sub forma unei matrici,
@@ -611,22 +679,47 @@ funcția va returna
 [1, 0, 1]
 [1, 0, 1]
 */
-void transformMatrix(char mat[MAX_ARRAY_LENGTH][MAX_ARRAY_LENGTH], unsigned int rows, unsigned int columns);
+void transformMatrix(char mat[MAX_ARRAY_LENGTH][MAX_ARRAY_LENGTH], unsigned int rows, unsigned int columns)
+{
+    int i, j, k;
+    for (i=0; i<rows; i++)
+        for (j=0; j<columns; j++)
+        {
+            if (mat[i][j]=='0')
+            {
+                mat[i][j]='7';
+                for (k=0; k<columns; k++)
+                    if (mat[i][k]=='1')
+                        mat[i][k]='7';
+
+                for (k=0; k<rows; k++)
+                    if (mat[k][j]=='1')
+                        mat[k][j]='7';
+            }
+        }
+
+        for (i=0; i<rows; i++)
+            for (j=0; j<columns; j++)
+            {
+                if (mat[i][j]=='7')
+                    mat[i][j]='0';
+            }
+}
 
 int main()
 {
     int i, j;
 
-    ///0+48 ???
+    ///0+48???? de vazut si modificat unde e cazul
     cout<<"1: "<<isPalindrom(13)<<'\n';///OK
-    cout<<"2: "<<sumBinaryFigure(8023)<<'\n';// nu merge pe numere mari
+    cout<<"2: "<<sumBinaryFigure(1023)<<'\n';// nu merge pe numere mari
     cout<<"3: "<<isLeapYear(2004)<<'\n'; /// OK
-    cout<<"4: "<<dayOfTheWeek(2012, 2, 30)<<'\n';///OK
-    cout<<"5: "<<fibonnaci(49)<<'\n';///OK
-    cout<<"6: "<<perfectNumbers(100000)<<'\n'; /// OK nr mari->nu
+    cout<<"4: "<<dayOfTheWeek(2016, 10, 1)<<'\n';///OK
+    cout<<"5: "<<fibonnaci(3)<<'\n';///OK
+    cout<<"6: "<<perfectNumbers(1000)<<'\n'; /// OK nr mari->nu
     //cout<<"7: "<<primeDivisors(0, 10)<<'\n'; /// de testat pe numere mari 0, 4miliarde, 1 element?
     //de refacut 7
-    matrix M=primeTwins(100, 200020);
+    matrix M=primeTwins(3, 2);
     cout<<"8: "<<'\n'; /// OK;
     for (i=0; i<M.lines; i++)
     {
@@ -637,12 +730,12 @@ int main()
     vector fib;
     cout<<"9: "<<areOrderedFibonnaci(fib)<<'\n';///OK
 
-    /*vector v1, v2;
-    cin>>v1.length>>v2.length;
-    for (i=0; i<v1.length; i++) cin>>v1.values[i];
-    for (i=0; i<v2.length; i++) cin>>v2.values[i];
+    vector v1, v2;
+    fin>>v1.length>>v2.length;
+    for (i=0; i<v1.length; i++) fin>>v1.values[i];
+    for (i=0; i<v2.length; i++) fin>>v2.values[i];
 
-    cout<<"10: "<<checkVectorInclude(v1, v2); //de refacut, not working*/
+    cout<<"10: "<<checkVectorInclude(v1, v2)<<'\n'; //de refacut, not working*/
 
     //matrix M;
     fin>>M.lines>>M.columns;
@@ -655,7 +748,7 @@ int main()
         fin>>v.values[i];
     cout<<"11: "<<checkIsIn(v, M)<<'\n';///OK
 
-    M=rotate(M, 3, 1);
+    M=rotate(M, 3, 3);
     cout<<"12: "<<'\n'; ///OK
     for (i=0; i<M.lines; i++)
     {
@@ -663,21 +756,36 @@ int main()
             cout<<M.values[i][j]<<" ";
         cout<<'\n';
     }
-    cout<<"13: "<<isPartOfFibonnaci(v, 5)<<'/n';///!OK
-    //cout<<"14: "//neterminata
+    cout<<"13: "<<isPartOfFibonnaci(v, 6)<<'\n'; ///!OK
+    cout<<"14: "<<palindrom(-2013265903)<<'\n';
 
-    long  v1[100], x;
+    long  v12[100], x;
     char c[100];
-
     fin>>x;
-    for (i=0; i<x; i++)
-        fin>>v1[i];
+    for (i=0; i<x; i++)   fin>>v12[i];
+    for (i=0; i<x-1; i++) fin>>c[i];
+    cout<<"15: "<<bitOperations(v12, c, x)<<'\n'; ///OK;
+    cout<<"16: "<<palindrom(128)<<'\n'; //numere negative?
+    cout<<"17: "<<fibonnaciSpirale(M)<<'\n'; ///OK
 
-    for (i=0; i<x-1; i++)
-        fin>>c[i];
-    //cout<<"15: "<<bitOperations(v1, c, x)<<'\n'; ///OK;
+    char m[100][100];
+    int lin, col;
+    fin>>lin>>col;
+    for (i=0; i<lin; i++)
+        for (j=0; j<col; j++)
+            fin>>m[i][j];
 
-    //cout<<"16: "<<palindrom(128)<<'\n';
+    transformMatrix(m, lin, col);
+    cout<<"19: "<<'\n'; /// OK!!!!!!!
+
+    for (i=0; i<lin; i++)
+    {
+        for (j=0; j<col; j++)
+            cout<<m[i][j]<<" ";
+        cout<<'\n';
+    }
+    int z=3;
+    cout<<(char) z;
 
     return 0;
 }
