@@ -1,13 +1,7 @@
-#include <iostream>
-#include <fstream>
-#define MAX_ARRAY_LENGTH 100
-#define MAX_ARRAY_LENGTH_LONG 10000
 #include "t1.h"
-#include <math.h>
+#include <iostream>
 
 using namespace std;
-
-ifstream fin ("txt.in");
 
 /*
 1.(0.4p)  Scrieți o funcție care verifică dacă un număr este palindrom. Un număr
@@ -49,9 +43,8 @@ unsigned char sumBinaryFigure(unsigned long long number)
         number/=2;
     }
 
-    return sum;
+    return (unsigned char) sum;
 }
-
 
 /*
 3.(0.4p) Scrieti o funcție care calculează dacă un an este bisect.
@@ -90,7 +83,7 @@ unsigned char dayOfTheWeek(unsigned short year, unsigned char month, unsigned ch
     int x=h+6;
     if (x<8) return x;
 
-    return x%7;
+    return (unsigned char) x%7;
 }
 
 /*
@@ -107,7 +100,7 @@ unsigned int fibonnaci(int index)
     int f1=1, f2=1, f3;
 
     if (index <=0 ) return 0;
-    if (index==1) return 0;
+    if (index==1) return 1;
     if (index==2) return 1;
 
     index-=2;
@@ -174,22 +167,14 @@ unsigned short primeDivisors(unsigned int left, unsigned int right)
 {
     int d, nrdiv, k=0, maxn=0, nrmax=0, i, j;
     int v[1001];
+
     int lgv=right-left+1;
-    bool ciur[right+1];
-    for (i=left; i<=right;i++)  ciur[i]=true;
-
-    for (i=left; i*i<=right;i++)
-        if (ciur[i])
-            for (j=i; j*i<=right;j++)
-                ciur[i*j]=false;
-
-
     for (i=left; i<=right; i++)
     {
         d=2; nrdiv=0;
         while(d<=i/2)
         {
-            if (!ciur[d] && i%d==0)
+            if (isPrime(d) && i%d==0)
                 nrdiv++;
             d++;
         }
@@ -201,7 +186,6 @@ unsigned short primeDivisors(unsigned int left, unsigned int right)
     for (i=0; i<lgv; i++)
         if (v[i]==maxn)
             nrmax++;
-
     return nrmax;
 }
 
@@ -268,6 +252,26 @@ bool areOrderedFibonnaci(vector vec)
     return true;
 }
 
+void SelectSort(vector &vec)
+{
+    int i, j, mini, pmin;
+
+    //Select Sort
+    for (i=0; i<vec.length-1; i++)
+    {//determinam min de la 1 la i
+        mini=vec.values[i]; pmin=i;
+        for (j=i+1; j<vec.length; j++)
+            if (vec.values[j]<mini)
+            {
+                mini=vec.values[j];
+                pmin=j;
+            }
+         //interschimbam min cu elementul de pe pozitia i
+         vec.values[pmin]=vec.values[i];
+         vec.values[i]=mini;
+    }
+}
+
 /*
 10.(0.4p) Scrieți o funcție care primește doi vectori ca parametru și returnează
  0 dacă sunt egali, 1 daca primul este inclus în al doilea, 2 dacă al doilea
@@ -278,51 +282,52 @@ bool areOrderedFibonnaci(vector vec)
 */
 unsigned char checkVectorInclude(vector vecOne, vector vecTwo)
 {
-    int i, j, maxlg;
-    vector frecvOne, frecvTwo;
+     int i, j, minval=-999999999, countOne=0, ok;
+     SelectSort(vecOne);
+     SelectSort(vecTwo);
 
-    frecvOne.length=vecOne.length;
-    frecvTwo.length=vecTwo.length;
+     if (vecOne.length==vecTwo.length)
+     {
+         for (i=0; i<vecOne.length; i++)
+            if (vecOne.values[i]!=vecTwo.values[i])
+               return (unsigned char) 3;
+            return (unsigned char) 0;
+     }
 
-    for (i=0; i<100; i++)
-        frecvOne.values[i]=frecvTwo.values[i]=0;
-
-    for (i=0; i<vecOne.length; i++)
-        frecvOne.values[vecOne.values[i]]++;
-
-    for (i=0; i<vecTwo.length; i++)
-        frecvTwo.values[vecTwo.values[i]]++;
-
-    //Caz vecOne==vecTwo
-    if (frecvOne.length==frecvTwo.length)
-    {
-        for (i=0; i<frecvOne.length; i++)
-        {
-            if (frecvOne.values[i]!=frecvTwo.values[i])
-                return 3+'0';
-        }
-        return 0+'0';
-    }
-
-    //Caz vecTwo inclus in vecOne
-    if (frecvOne.length>frecvTwo.length)
-    {
-        for (i=0; i<frecvOne.length; i++)
-        {
-            if ( (frecvOne.values[i]-frecvTwo.values[i])<=-1)
-                return 3+'0';
-        }
-        return 2+'0';
-    }
-    else //Caz vecOne inclus in vecTwo
-    {
-        for (i=0; i<frecvTwo.length; i++)
-        {
-            if ( (frecvTwo.values[i]-frecvOne.values[i])<=-1)
-                return 3+'0';
-        }
-        return 1+'0';
-    }
+     if (vecOne.length>vecTwo.length)
+     {
+         for (i=0; i<vecTwo.length; i++)
+         {
+            ok=0;
+            for (j=0; j<vecOne.length && !ok; j++)
+                if (vecTwo.values[i]==vecOne.values[j])
+                {
+                    vecOne.values[j]=minval;
+                    countOne++;
+                    ok=1;
+                }
+         }
+            if (countOne==vecTwo.length)
+                 return (unsigned char) 2;
+             return (unsigned char) 3;
+     }
+     else
+     {
+          for (i=0; i<vecOne.length; i++)
+         {
+            ok=0;
+            for (j=0; j<vecTwo.length && !ok; j++)
+                if (vecOne.values[i]==vecTwo.values[j])
+                {
+                    vecTwo.values[j]=minval;
+                    countOne++;
+                    ok=1;
+                }
+         }
+            if (countOne==vecOne.length)
+                 return (unsigned char) 1;
+             return (unsigned char) 3;
+     }
 }
 
 /*
@@ -437,25 +442,12 @@ bool isPartOfFibonnaci(vector vec, unsigned int startingNumber)
 {
     long long int i, j, mini, pmin;
 
-    //Select Sort
-    for (i=0; i<vec.length-1; i++)
-    {//determinam min de la 1 la i
-        mini=vec.values[i]; pmin=i;
-        for (j=i+1; j<vec.length; j++)
-            if (vec.values[j]<mini)
-            {
-                mini=vec.values[j];
-                pmin=j;
-            }
-         //interschimbam min cu elementul de pe pozitia i
-
-         vec.values[pmin]=vec.values[i];
-         vec.values[i]=mini;
-    }
+    SelectSort(vec);
 
     if (vec.values[0]!=startingNumber) return false;
 
     long long int a=0, b=1, c;
+
     while(c!=startingNumber)
     {
         c=a+b;
@@ -463,7 +455,9 @@ bool isPartOfFibonnaci(vector vec, unsigned int startingNumber)
         b=c;
     }
 
-    if (a+startingNumber != vec.values[1]) return false;
+    if (vec.length==1) return true;
+    if (a+startingNumber != vec.values[1])
+        return false;
 
     bool ok=true;
     for (i=0; i<vec.length-2 && ok; i++)
@@ -471,7 +465,6 @@ bool isPartOfFibonnaci(vector vec, unsigned int startingNumber)
         if (vec.values[i]+vec.values[i+1]!=vec.values[i+2])
             ok=false;
     }
-
     return ok;
 }
 
@@ -490,47 +483,27 @@ Ex: Pentru sets=[1,2,3] și operations=[’U’,’\’] funcția va calcula 001
 cu 010(2) și va avea rezultatul 011 iar 011 minus 011(3) va avea rezultatul 000(0)
 si funcția va returna 0.
 */
-unsigned long setOperations(long long sets[], char operations[], unsigned int x)
+unsigned long setOperations(long sets[], char operations[], unsigned int x)
 {
-    int i, j, k, v[6], first_b2[6], second_b2[6];
-    for (i=0; i<6; i++) v[i]=first_b2[i]=second_b2[i]=0;
+    int i, result, k=0;
 
-    k=0;
-    for (i=0; i<x; i+=2)
+    for (i=0; i<x; i++)
     {
-        for (j=0; sets[i]>0; j++)
-        {
-            first_b2[j]=sets[i]%2;
-            sets[i]/=2;
-        }
+        if (operations[k]=='U')//A | B
+            result=sets[i] | sets[i+1];
 
-        for (j=0; sets[i+1]>0; j++)
-        {
-            second_b2[j]=sets[i+1]%2;
-            sets[i+1]/=2;
-        }
+        if (operations[k]=='A')//A & B
+            result=sets[i] & sets[i+1];
 
-        if (operations[k++]=='U')
-        {
-            for (i=0; i<6; i++)
-            {
-                v[i]=(first_b2[i] || second_b2[i]);
-            }
-        }
+        if (operations[k]=='\\')//A-B
+            result=result ^ (sets[i] & sets[i+1]);
 
-        if (operations[k++]=='A')
-        {
-            for (i=0; i<6; i++)
-            {
-                v[i]=(first_b2[i] && second_b2[i]);
-            }
-        }
+        if (operations[k]=='\/')//B-A
+            result=sets[i+1] ^ (sets[i]&sets[i+1]);
 
-        //if (operations[k++]==)
-
-
-        //if (operations[k++]=='/')
+        k++; sets[i+1]=result;
     }
+    return result;
 }
 
 /*
@@ -602,7 +575,6 @@ bool palindrom(long number)
         }
     }
 
-
     for (i=0; i<length/2; i++)
         if (b[i]!=b[length-1-i])
             return false;
@@ -664,7 +636,54 @@ poziția celulei de plecare și poziția celulei de iesire și returnează lungi
 drumului minim de la plecare la ieșire. Fiecare celulă din matrice va avea va
 avea valoare 1 (perete) sau 0 (drum).
 */
-unsigned int minRouteLength(smaze magicMaze);
+bool verificareMatrix (unsigned int linM, int colM, int lin, int col)
+{
+    if (lin<0 || lin>=linM)
+        return false;
+    if (col<0 || col>=colM)
+        return false;
+    return true;
+}
+
+unsigned int minRouteLength(smaze maze)
+{
+    char dl[]={-1, 0, 1, 0};
+    char dc[]={0, 1, 0, -1};
+
+    int prim, ultim, k;
+
+    struct poz
+    {
+        int lin;
+        int col;
+    }C[10*10], poz, vecin;
+
+    prim=0; ultim=0;
+    C[0].lin=maze.rowOfDeparture;
+    C[0].col=maze.columnOfDeparture;
+    maze.maze[maze.rowOfDeparture][maze.columnOfDeparture]='1';
+
+    while (prim<=ultim && maze.maze[maze.rowOfExit][maze.columnOfExit]=='0')
+    {
+        poz.lin=C[prim].lin;
+        poz.col=C[prim].col;
+        prim++;
+
+        for (k=0; k<4; k++)
+        {
+            vecin.lin=poz.lin+dl[k];
+            vecin.col=poz.col+dc[k];
+            if (maze.maze[vecin.lin][vecin.col]=='0'
+                && verificareMatrix(maze.noOfRows, maze.noOfColumns, vecin.lin, vecin.col))
+            {
+                maze.maze[vecin.lin][vecin.col]=maze.maze[poz.lin][poz.col]+1;
+                ultim++; C[ultim]=vecin;
+            }
+        }
+    }
+
+    return (unsigned int) maze.maze[maze.rowOfExit][maze.columnOfExit]-'1';
+}
 
 /*
 19.(0.85p) Scrieți o funcție care primește o matrice de 1 și 0, și returnează
@@ -679,7 +698,7 @@ funcția va returna
 [1, 0, 1]
 [1, 0, 1]
 */
-void transformMatrix(char mat[MAX_ARRAY_LENGTH][MAX_ARRAY_LENGTH], unsigned int rows, unsigned int columns)
+void transformMatrix(char mat[MAX_ARRAY_LENGTH_LONG][MAX_ARRAY_LENGTH_LONG], unsigned int rows, unsigned int columns)
 {
     int i, j, k;
     for (i=0; i<rows; i++)
@@ -710,83 +729,54 @@ int main()
 {
     int i, j;
 
-    ///0+48???? de vazut si modificat unde e cazul
+
     cout<<"1: "<<isPalindrom(13)<<'\n';///OK
-    cout<<"2: "<<sumBinaryFigure(1023)<<'\n';// nu merge pe numere mari
+    cout<<"2: "<<(int) sumBinaryFigure(1023)<<'\n';// nu merge pe numere mari
     cout<<"3: "<<isLeapYear(2004)<<'\n'; /// OK
-    cout<<"4: "<<dayOfTheWeek(2016, 10, 1)<<'\n';///OK
+    cout<<"4: "<<(int) dayOfTheWeek(2016, 10, 1)<<'\n';///OK
     cout<<"5: "<<fibonnaci(3)<<'\n';///OK
-    cout<<"6: "<<perfectNumbers(1000)<<'\n'; /// OK nr mari->nu
-    //cout<<"7: "<<primeDivisors(0, 10)<<'\n'; /// de testat pe numere mari 0, 4miliarde, 1 element?
-    //de refacut 7
-    matrix M=primeTwins(3, 2);
-    cout<<"8: "<<'\n'; /// OK;
+    cout<<"6: "<<perfectNumbers(1000)<<'\n'; ///
+    cout<<"7: "<<primeDivisors(30, 45)<<'\n'; ///
+    cout<<"8: "<<'\n';
+    matrix M=primeTwins(4, 10);
     for (i=0; i<M.lines; i++)
     {
         for (j=0; j<M.columns; j++)
             cout<<M.values[i][j]<<" ";
         cout<<'\n';
     }
-    vector fib;
-    cout<<"9: "<<areOrderedFibonnaci(fib)<<'\n';///OK
+    vector vec;
+    fin>>vec.length;
+    for (i=0; i<vec.length; i++)
+        fin>>vec.values[i];
+    cout<<"9: "<<areOrderedFibonnaci(vec)<<'\n';
 
     vector v1, v2;
-    fin>>v1.length>>v2.length;
-    for (i=0; i<v1.length; i++) fin>>v1.values[i];
-    for (i=0; i<v2.length; i++) fin>>v2.values[i];
+    fin>>v1.length;
+    fin>>v2.length;
+    for (i=0; i<v1.length; i++)
+        fin>>v1.values[i];
+    for (i=0; i<v2.length; i++)
+        fin>>v2.values[i];
 
-    cout<<"10: "<<checkVectorInclude(v1, v2)<<'\n'; //de refacut, not working*/
+    cout<<"10: "<<(int)checkVectorInclude(v1, v2)<<'\n';
+    cout<<"11: "<<checkIsIn(v1, M)<<'\n';
+    cout<<"12: "<<'\n';
+    //M=rotate(M, 1, 2);
+    cout<<"13: "<<isPartOfFibonnaci(vec, 2)<<'\n';
 
-    //matrix M;
-    fin>>M.lines>>M.columns;
-    for (i=0; i<M.lines; i++)
-        for (j=0; j<M.columns; j++)
-            fin>>M.values[i][j];
-    vector v;
-    fin>>v.length;
-    for (i=0; i<v.length; i++)
-        fin>>v.values[i];
-    cout<<"11: "<<checkIsIn(v, M)<<'\n';///OK
 
-    M=rotate(M, 3, 3);
-    cout<<"12: "<<'\n'; ///OK
-    for (i=0; i<M.lines; i++)
-    {
-        for (j=0; j<M.columns; j++)
-            cout<<M.values[i][j]<<" ";
-        cout<<'\n';
-    }
-    cout<<"13: "<<isPartOfFibonnaci(v, 6)<<'\n'; ///!OK
-    cout<<"14: "<<palindrom(-2013265903)<<'\n';
 
-    long  v12[100], x;
-    char c[100];
-    fin>>x;
-    for (i=0; i<x; i++)   fin>>v12[i];
-    for (i=0; i<x-1; i++) fin>>c[i];
-    cout<<"15: "<<bitOperations(v12, c, x)<<'\n'; ///OK;
-    cout<<"16: "<<palindrom(128)<<'\n'; //numere negative?
-    cout<<"17: "<<fibonnaciSpirale(M)<<'\n'; ///OK
+    smaze Mat;
+    fin>>Mat.noOfRows>>Mat.noOfColumns;
+    for (i=0; i<Mat.noOfRows; i++)
+        for (j=0; j<Mat.noOfColumns; j++)
+            fin>>Mat.maze[i][j];
 
-    char m[100][100];
-    int lin, col;
-    fin>>lin>>col;
-    for (i=0; i<lin; i++)
-        for (j=0; j<col; j++)
-            fin>>m[i][j];
+    fin>>Mat.rowOfDeparture>>Mat.columnOfDeparture;
+    fin>>Mat.rowOfExit>>Mat.columnOfExit;
 
-    transformMatrix(m, lin, col);
-    cout<<"19: "<<'\n'; /// OK!!!!!!!
-
-    for (i=0; i<lin; i++)
-    {
-        for (j=0; j<col; j++)
-            cout<<m[i][j]<<" ";
-        cout<<'\n';
-    }
-    int z=3;
-    cout<<(char) z;
+    cout<<"18: "<<minRouteLength(Mat);
 
     return 0;
 }
-
