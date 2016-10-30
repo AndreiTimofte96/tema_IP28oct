@@ -1,7 +1,4 @@
 #include "t1.h"
-#include <iostream>
-
-using namespace std;
 
 /*
 1.(0.4p)  Scrieți o funcție care verifică dacă un număr este palindrom. Un număr
@@ -122,7 +119,7 @@ celor mai mari două numere perfecte mai mici decat un număr (number >= 30) dat
 */
 unsigned long perfectNumbers(unsigned int number)
 {
-    unsigned long int d, perfect1=6, perfect2=28, i=30, sum;
+    unsigned long d, perfect1=6, perfect2=28, i=30, sum;
 
     while (i<number)
     {
@@ -141,7 +138,6 @@ unsigned long perfectNumbers(unsigned int number)
         }
         i++;
     }
-
     return perfect1+perfect2;
 }
 
@@ -282,7 +278,17 @@ void SelectSort(vector &vec)
 */
 unsigned char checkVectorInclude(vector vecOne, vector vecTwo)
 {
-     int i, j, minval=-999999999, countOne=0, ok;
+     int i, j, minval=-1000000, countOne=0, ok;
+
+
+     if (vecOne.length==0 || vecTwo.length==0)
+     {
+         if (vecOne.length==0 && vecTwo.length)
+            return (unsigned char)1;
+         if (vecOne.length==0 && vecTwo.length==0)
+            return(unsigned char) 0;
+         return(unsigned char) 2;
+     }
      SelectSort(vecOne);
      SelectSort(vecTwo);
 
@@ -344,7 +350,10 @@ funcția returnează true;
 */
 bool checkIsIn(vector vec, matrix mat)
 {
-    int i, j, ok;
+    unsigned long int i, j, ok;
+
+    if (vec.length>mat.lines || vec.length>mat.columns) return false;
+    if (mat.lines==0 || mat.columns==0) return true;
     for (i=0; i<mat.lines; i++) //cautam pe linii
     {
         ok=1;
@@ -485,7 +494,8 @@ si funcția va returna 0.
 */
 unsigned long setOperations(long sets[], char operations[], unsigned int x)
 {
-    int i, result, k=0;
+    long i, result, k=0;
+    if (x==1) return sets[0];
 
     for (i=0; i<x; i++)
     {
@@ -498,7 +508,7 @@ unsigned long setOperations(long sets[], char operations[], unsigned int x)
         if (operations[k]=='\\')//A-B
             result=result ^ (sets[i] & sets[i+1]);
 
-        if (operations[k]=='\/')//B-A
+        if (operations[k]=='/')//B-A
             result=sets[i+1] ^ (sets[i]&sets[i+1]);
 
         k++; sets[i+1]=result;
@@ -520,6 +530,7 @@ unsigned long bitOperations(long numbers[], char operations[], unsigned int x)
 {
     unsigned long i, j, k=0, result;
 
+    if (x==1) return numbers[0];
     for (i=0; i<x; i++)
     {
         if (operations[k]=='<')
@@ -647,6 +658,7 @@ bool verificareMatrix (unsigned int linM, int colM, int lin, int col)
 
 unsigned int minRouteLength(smaze maze)
 {
+
     char dl[]={-1, 0, 1, 0};
     char dc[]={0, 1, 0, -1};
 
@@ -656,7 +668,7 @@ unsigned int minRouteLength(smaze maze)
     {
         int lin;
         int col;
-    }C[10*10], poz, vecin;
+    }C[MAX_ARRAY_LENGTH_LONG*MAX_ARRAY_LENGTH_LONG], poz, vecin;
 
     prim=0; ultim=0;
     C[0].lin=maze.rowOfDeparture;
@@ -700,83 +712,30 @@ funcția va returna
 */
 void transformMatrix(char mat[MAX_ARRAY_LENGTH_LONG][MAX_ARRAY_LENGTH_LONG], unsigned int rows, unsigned int columns)
 {
-    int i, j, k;
+    unsigned int i, j, k;
+
+
     for (i=0; i<rows; i++)
         for (j=0; j<columns; j++)
         {
-            if (mat[i][j]=='0')
+            if (mat[i][j]==0)
             {
-                mat[i][j]='7';
+                mat[i][j]=7;
                 for (k=0; k<columns; k++)
-                    if (mat[i][k]=='1')
-                        mat[i][k]='7';
+                    if (mat[i][k]==1)
+                        mat[i][k]=7;
 
                 for (k=0; k<rows; k++)
-                    if (mat[k][j]=='1')
-                        mat[k][j]='7';
+                    if (mat[k][j]==1)
+                        mat[k][j]=7;
             }
         }
 
-        for (i=0; i<rows; i++)
-            for (j=0; j<columns; j++)
-            {
-                if (mat[i][j]=='7')
-                    mat[i][j]='0';
-            }
+    for (i=0; i<rows; i++)
+        for (j=0; j<columns; j++)
+        {
+            if (mat[i][j]==7)
+                mat[i][j]=0;
+        }
 }
 
-int main()
-{
-    int i, j;
-
-
-    cout<<"1: "<<isPalindrom(13)<<'\n';///OK
-    cout<<"2: "<<(int) sumBinaryFigure(1023)<<'\n';// nu merge pe numere mari
-    cout<<"3: "<<isLeapYear(2004)<<'\n'; /// OK
-    cout<<"4: "<<(int) dayOfTheWeek(2016, 10, 1)<<'\n';///OK
-    cout<<"5: "<<fibonnaci(3)<<'\n';///OK
-    cout<<"6: "<<perfectNumbers(1000)<<'\n'; ///
-    cout<<"7: "<<primeDivisors(30, 45)<<'\n'; ///
-    cout<<"8: "<<'\n';
-    matrix M=primeTwins(4, 10);
-    for (i=0; i<M.lines; i++)
-    {
-        for (j=0; j<M.columns; j++)
-            cout<<M.values[i][j]<<" ";
-        cout<<'\n';
-    }
-    vector vec;
-    fin>>vec.length;
-    for (i=0; i<vec.length; i++)
-        fin>>vec.values[i];
-    cout<<"9: "<<areOrderedFibonnaci(vec)<<'\n';
-
-    vector v1, v2;
-    fin>>v1.length;
-    fin>>v2.length;
-    for (i=0; i<v1.length; i++)
-        fin>>v1.values[i];
-    for (i=0; i<v2.length; i++)
-        fin>>v2.values[i];
-
-    cout<<"10: "<<(int)checkVectorInclude(v1, v2)<<'\n';
-    cout<<"11: "<<checkIsIn(v1, M)<<'\n';
-    cout<<"12: "<<'\n';
-    //M=rotate(M, 1, 2);
-    cout<<"13: "<<isPartOfFibonnaci(vec, 2)<<'\n';
-
-
-
-    smaze Mat;
-    fin>>Mat.noOfRows>>Mat.noOfColumns;
-    for (i=0; i<Mat.noOfRows; i++)
-        for (j=0; j<Mat.noOfColumns; j++)
-            fin>>Mat.maze[i][j];
-
-    fin>>Mat.rowOfDeparture>>Mat.columnOfDeparture;
-    fin>>Mat.rowOfExit>>Mat.columnOfExit;
-
-    cout<<"18: "<<minRouteLength(Mat);
-
-    return 0;
-}
