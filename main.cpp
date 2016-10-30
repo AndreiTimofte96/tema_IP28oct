@@ -494,27 +494,27 @@ si funcția va returna 0.
 */
 unsigned long setOperations(long sets[], char operations[], unsigned int x)
 {
-    long i, result, k=0;
-    if (x==1) return sets[0];
+    unsigned long result, i;
 
-    for (i=0; i<x; i++)
+    result=sets[0];
+    for (i=1; i<x; i++)
     {
-        if (operations[k]=='U')//A | B
-            result=sets[i] | sets[i+1];
+        if (operations[i-1]=='U')//A | B
+            result=result | sets[i];
 
-        if (operations[k]=='A')//A & B
-            result=sets[i] & sets[i+1];
+        if (operations[i-1]=='A')//A & B
+            result=result & sets[i];
 
-        if (operations[k]=='\\')//A-B
-            result=result ^ (sets[i] & sets[i+1]);
+        if (operations[i-1]=='\\')//A-B
+            result=result ^ (result & sets[i]);
 
-        if (operations[k]=='/')//B-A
-            result=sets[i+1] ^ (sets[i]&sets[i+1]);
+        if (operations[i-1]=='/')//B-A
+            result=sets[i] ^ (sets[i] & result);
 
-        k++; sets[i+1]=result;
     }
     return result;
 }
+
 
 /*
 15.(0.6p) Scrieți o funcție care primește ca parametri un vector de x numere  și
@@ -526,27 +526,28 @@ operației a doua și al patrulea număr ș.a.m.d.
 	Operații: < (<<), > (>>), ^, |, &
 	Ex: Pentru numbers=[1,2,3] și operations=[>,&] funcția va returna (1>>2)&3 = 0
 */
+
 unsigned long bitOperations(long numbers[], char operations[], unsigned int x)
 {
-    unsigned long i, j, k=0, result;
+    unsigned long result, i;
 
-    if (x==1) return numbers[0];
-    for (i=0; i<x; i++)
-    {
-        if (operations[k]=='<')
-            result=numbers[i] << numbers[i+1];
-        if (operations[k]=='>')
-            result=numbers[i] >> numbers[i+1];
-        if (operations[k]=='^')
-            result=numbers[i] ^ numbers[i+1];
-        if (operations[k]=='|')
-            result=numbers[i] | numbers[i+1];
-        if (operations[k]=='&')
-            result=numbers[i] & numbers[i+1];
+    result=numbers[0];
+    for (i=1; i<x; i++)
+    {   if (operations[i-1] == '<')
+            result=result << numbers[i];
 
-        k++; numbers[i+1]=result;
+        if (operations[i-1] == '>')
+            result=result >> numbers[i];
+
+        if (operations[i-1]=='^')
+            result=result ^ numbers[i];
+
+        if (operations[i-1]=='&')
+            result=result & numbers[i];
+
+        if (operations[i-1]=='|')
+            result= result | numbers[i];
     }
-
     return result;
 }
 
@@ -738,4 +739,3 @@ void transformMatrix(char mat[MAX_ARRAY_LENGTH_LONG][MAX_ARRAY_LENGTH_LONG], uns
                 mat[i][j]=0;
         }
 }
-
